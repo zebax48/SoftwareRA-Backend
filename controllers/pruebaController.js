@@ -116,9 +116,25 @@ const importStudentsToGroup = async (req, res) => {
 const getAllPruebas = async (req, res) => {
     try {
         const pruebas = await Prueba.find().populate('programa resultadosAprendizaje grupos.encargado grupos.estudiantes.notas.ra');
+
+        // Calcular promedios para cada prueba y grupo
+        pruebas.forEach(prueba => {
+            prueba.grupos.forEach(grupo => {
+                grupo.promediosRA = prueba.resultadosAprendizaje.map(ra => ({
+                    ra: ra._id,
+                    promedio: calcularPromedioRA(grupo, ra._id)
+                }));
+
+                grupo.promedioGrupo = calcularPromedioGrupo(grupo);
+            });
+
+            prueba.promedioPrueba = calcularPromedioPrueba(prueba);
+        });
+
         res.status(200).json(pruebas);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error al obtener todas las pruebas:', error);
+        res.status(500).json({ error: 'Error del servidor' });
     }
 };
 
@@ -126,29 +142,29 @@ const getAllPruebas = async (req, res) => {
 const calcularPromedioRA = (grupo, raId) => {
     let totalNotas = 0;
     let cantidadNotas = 0;
-  
+
     if (!grupo.estudiantes || !Array.isArray(grupo.estudiantes)) {
-      console.error('Error: grupo.estudiantes no es un array o está undefined');
-      return 0;
+        console.error('Error: grupo.estudiantes no es un array o está undefined');
+        return 0;
     }
-  
+
     grupo.estudiantes.forEach(estudiante => {
-      console.log('Procesando estudiante:', estudiante.nombre);
-  
-      if (!estudiante.notas || !Array.isArray(estudiante.notas)) {
-        console.warn(`Estudiante ${estudiante.nombre} no tiene notas o notas no es un array.`);
-        return;
-      }
-  
-      estudiante.notas.forEach(nota => {
-        console.log('Nota encontrada:', nota);
-        if (nota.ra._id.toString() === raId.toString()) {
-          totalNotas += nota.nota;
-          cantidadNotas++;
+        console.log('Procesando estudiante:', estudiante.nombre);
+
+        if (!estudiante.notas || !Array.isArray(estudiante.notas)) {
+            console.warn(`Estudiante ${estudiante.nombre} no tiene notas o notas no es un array.`);
+            return;
         }
-      });
+
+        estudiante.notas.forEach(nota => {
+            console.log('Nota encontrada:', nota);
+            if (nota.ra._id.toString() === raId.toString()) {
+                totalNotas += nota.nota;
+                cantidadNotas++;
+            }
+        });
     });
-  
+
     console.log('Total notas:', totalNotas, 'Cantidad notas:', cantidadNotas);
     const promedio = cantidadNotas > 0 ? (totalNotas / cantidadNotas) : 0;
     return promedio;
@@ -213,9 +229,9 @@ const getPrueba = async (req, res) => {
                 ra: ra._id,
                 promedio: calcularPromedioRA(grupo, ra._id)
             }));
-        
+
             grupo.promedioGrupo = calcularPromedioGrupo(grupo);
-        });        
+        });
 
         prueba.promedioPrueba = calcularPromedioPrueba(prueba);
 
