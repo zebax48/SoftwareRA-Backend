@@ -181,22 +181,20 @@ const calcularPromedioGrupo = (grupo) => {
     return cantidadNotas ? totalNotas / cantidadNotas : 0;
 };
 
-// Calcular promedio de toda la prueba
 const calcularPromedioPrueba = (prueba) => {
-    let totalNotas = 0;
-    let cantidadNotas = 0;
+    let totalPromediosGrupos = 0;
+    let cantidadGrupos = 0;
 
     prueba.grupos.forEach(grupo => {
-        grupo.estudiantes.forEach(estudiante => {
-            estudiante.notas.forEach(nota => {
-                totalNotas += nota.nota;
-                cantidadNotas++;
-            });
-        });
+        // Solo sumamos los promedios de los grupos si el promedio no es 0 (o si tiene estudiantes)
+        if (grupo.promedioGrupo > 0) {
+            totalPromediosGrupos += grupo.promedioGrupo;
+            cantidadGrupos++;
+        }
     });
-
-    return cantidadNotas ? (totalNotas / cantidadNotas) : 0;
+    return cantidadGrupos ? (totalPromediosGrupos / cantidadGrupos) : 0;
 };
+
 
 
 // Obtener una prueba con cálculo de promedios
