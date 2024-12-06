@@ -186,16 +186,14 @@ const calcularPromedioPrueba = (prueba) => {
     let cantidadGrupos = 0;
 
     prueba.grupos.forEach(grupo => {
-        // Solo sumamos los promedios de los grupos si el promedio no es 0 (o si tiene estudiantes)
-        if (grupo.promedioGrupo > 0) {
-            totalPromediosGrupos += grupo.promedioGrupo;
-            cantidadGrupos++;
-        }
+        // Sumamos el promedio del grupo, sin importar si es 0 o no tiene estudiantes
+        totalPromediosGrupos += grupo.promedioGrupo;
+        cantidadGrupos++;
     });
+
+    // Calculamos el promedio general de la prueba
     return cantidadGrupos ? (totalPromediosGrupos / cantidadGrupos) : 0;
 };
-
-
 
 // Obtener una prueba con cálculo de promedios
 const getPrueba = async (req, res) => {
